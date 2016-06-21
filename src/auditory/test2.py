@@ -1,7 +1,12 @@
 
 
 from pyo import *# s = Server().boot()
-s = Server(audio='jack', nchnls=2).boot()
+import os
+
+s = Server(nchnls=2).boot()
 s.start()
-file= "/home/zelalem/Documents/Vocie-samples/amy.wav"
+mydir = 'C:/Users/rediet/Documents/Vocie-samples/'
+myfile = 'amy.wav'
+file = os.path.join(mydir, myfile)
 sf = SfPlayer(file, speed=1, loop=False)
+print sf

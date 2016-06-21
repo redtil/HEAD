@@ -21,13 +21,16 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import wave, struct
-import numpy, array
-import copy
 import gc
+import struct
+import wave
+
+import numpy
+
 gc.enable()
 
-import scipy.io.wavfile as sciWav
+from libs import scipy as sciWav
+
 
 ###############################################################################
 

@@ -1,16 +1,23 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*- 
 
-import threading
-import httplib, urllib
-import StringIO
 import ctypes
+import time
+import urllib
 import wave
-import subprocess
-from ems import em
 
-def marytts_server():
-    subprocess.call(['/home/zelalem/marytts-5.0/bin/marytts-server.sh'])
+import StringIO
+import httplib
+import matplotlib.pyplot as plt
+
+from libs.swipe import swipe
+
+
+# A simple MARY TTS client in Python, using pulseaudio for playback
+#
+# based on Code from Hugh Sasse (maryclient-http.py)
+#
+# 2013 by G. Bartsch. License: LGPLv3
 
 class maryclient:
 
@@ -202,35 +209,72 @@ class pulseplayer:
 
 if __name__ == "__main__":
 
-    t = threading.Thread(target = marytts_server)
-    t.start()
     client = maryclient()
 
     client.set_locale ("en_US")
     #client.set_locale ("de")
+
     # english, male
     #client.set_voice ("dfki-spike")
     #client.set_voice ("dfki-obadiah")
     # client.set_voice ("dfki-obadiah-hsmm")
     #client.set_voice ("cmu-bdl-hsmm")
     #client.set_voice ("cmu-rms-hsmm")
-        # english, female
+    
+    # english, female
     #client.set_voice ("dfki-poppy")
     #client.set_voice ("dfki-poppy-hsmm")
     #client.set_voice ("dfki-prudence")
     # client.set_voice ("dfki-prudence-hsmm")
     client.set_voice ("cmu-slt-hsmm")
-
-f = open('/home/zelalem/sample_emotion.txt')
-
-for line in iter(f):
-    line = line.strip('\n').lower()
-    line = line.strip('.').lower()
-    print line
-
-    the_sound = client.generate(line)
-            #the_sound = client.generate("Der Atomkern ist der, im Vergleich zur Atomhülle, winzig kleine Kern des Atoms.")
+    
+    # german, male
+    #client.set_voice ("dfki-pavoque-neutral")
+    #client.set_voice ("dfki-pavoque-neutral-hsmm")
+    #client.set_voice ("dfki-pavoque-styles")
+    #client.set_voice ("bits3")
+    #client.set_voice ("bits3-hsmm")
+    
+    # german, female
+    #client.set_voice ("bits1-hsmm")
+    
+    # telugu, female
+    #client.set_voice ("cmu-nk-hsmm")
+    
+    # turkish, male
+    #client.set_voice ("dfki-ot-hsmm")
+    the_sound = client.generate("His mother became worried when she didn't hear from him for two days.")
+    #the_sound = client.generate("Der Atomkern ist der, im Vergleich zur Atomhülle, winzig kleine Kern des Atoms.")
 
     player = pulseplayer("HAL 9000")
     player.play(the_sound)
+
+
+
+
+
+    pitch = swipe(the_sound, 75, 600) # read in pitch track via swipe
+
+    data ={}
+    time=[]
+    frequency=[]
+
+    for (t, pitch) in pitch:
+        if pitch < 600:  # hz
+            print t,'****' ,pitch
+            time.append(t)
+            frequency.append(pitch)
+
+
+    data['Time'] = time
+    data['Frequency'] = frequency
+
+
+    plt.figure(1)
+    plt.xlabel('Time')
+    plt.ylabel('Freq')
+    plt.plot(data['Time'], data['Frequency'])
+    plt.gcf().autofmt_xdate()
+    plt.title('Frequency vs Time')
+    plt.show()
 

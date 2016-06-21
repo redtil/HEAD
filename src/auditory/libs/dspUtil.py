@@ -22,20 +22,19 @@ this program; if not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import math
-import numpy
-import generalUtility
 import copy
-from matplotlib import pyplot as plt
-from scipy import stats
-from scipy import signal
-import myWave
+import math
 
-import scipy.misc 
+import numpy
+from matplotlib import pyplot as plt
+
+import generalUtility
+import scipy.misc
 import scipy
+from scipy import stats
+
 scipy.factorial = scipy.misc.factorial
-import scipy.signal
-	
+
 ######################################################################
 
 DSP_MIDDLE_C = 440.0 * math.pow(2.0, (-9.0 / 12.0))
@@ -365,7 +364,7 @@ class additiveSynthesizer:
 						idx = int(f / vttfBinWidth)
 						if idx > 0:
 							xRel = (f / vttfBinWidth - idx) / vttfBinWidth
-							A = generalUtility.interpolateLinear(self.arrVTTFamp[idx-1], self.arrVTTFamp[idx], xRel)
+							A = generalUtility.interpolateLinear(self.arrVTTFamp[idx - 1], self.arrVTTFamp[idx], xRel)
 						else:
 							A = self.arrVTTFamp[0]
 					else:
@@ -554,6 +553,7 @@ def hertzToCents(
 		middle C</a>)
 	@return [cent]
 	"""
+	# print 1200.0 * (math.log10(freq/baseFreq)/LOG10_TWO)
 	return 1200.0 * (math.log10(freq / baseFreq) / LOG10_TWO)
 	
 ######################################################################
@@ -947,7 +947,7 @@ def calculateF0once(
 	# find peak in AC 
 	try:
 		xOfMax, valMax = generalUtility.findArrayMaximum(r, fs / Fmax, \
-			fs / Fmin)
+														 fs / Fmin)
 		valMax /= max(r)
 		freq = fs / xOfMax
 		return freq
@@ -1827,7 +1827,7 @@ def calculateAnalyticSignal(data):
 	        (c) the amplitude and (d) the phase
 	"""	
 	# do the hilbert transform
-	h = scipy.signal.hilbert(data)
+	h = libs.scipy.signal.hilbert(data)
 	
 	n = len(data)
 	hReal = numpy.zeros(n)
