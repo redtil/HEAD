@@ -94,7 +94,7 @@ def get_unvoiced_region_array(sndarrayOne,vSig,lengthUnvoiced):
 def plot_voiced_region(xVoiced):
     xVoiced = numpy.asarray(xVoiced).astype(numpy.float32)
     # hopsize = 10 # 5ms for 16kHz data
-    f0 = get_freq_array(xVoiced,44100)
+    f0 = pysptk.swipe(numpy.asarray(xVoiced).astype(numpy.float64), 44100, 80,10,600,0.3,1)
     fnew = []
     cnti = []
     cnt = 0
@@ -110,7 +110,7 @@ def plot_voiced_region(xVoiced):
 
     import matplotlib.pyplot as plt
     plt.close()
-    plt.plot(cnti, cent,'-o', linewidth=2, label="F0 trajectory estimated by SWIPE'")
+    plt.plot(f0,'-o', linewidth=2, label="F0 trajectory estimated by SWIPE'")
     plt.xlim(0, len(f0))
     plt.legend()
     plt.show()
@@ -216,6 +216,11 @@ def make_two_channels(sndarrayOne):
         sndarrayTwo.append(bz)
     return sndarrayTwo
 
+def write_to_new_file(filename,path,sndarray):
+    sndarray = numpy.asarray(sndarray)
+    file = path + filename
+    scipy.io.wavfile.write(file,44100,numpy.asarray(sndarray))
+
 if __name__ == "__main__":
     mydir = 'C:/Users/rediet/Documents/Vocie-samples/'
     myfile = 'amy.wav'
@@ -237,4 +242,6 @@ if __name__ == "__main__":
     # plot_voiced_region(xMerged)
     # xTwo = make_two_channels(x)
     xMergedTwo = make_two_channels(xMerged)
-    scipy.io.wavfile.write('C:/Users/rediet/Documents/Vocie-samples/amyMerged.wav',fs,numpy.asarray(xMergedTwo))
+    path = 'C:/Users/rediet/Documents/Vocie-samples/'
+    write_to_new_file('amyMerged.wav',path,xMergedTwo)
+    # scipy.io.wavfile.write('C:/Users/rediet/Documents/Vocie-samples/amyMerged.wav',fs,numpy.asarray(xMergedTwo))

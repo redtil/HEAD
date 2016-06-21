@@ -8,20 +8,48 @@ import numpy
 from libs import dspUtil
 import scipy
 import array
-import voiced_unvoiced
+import voiced_unvoiced as voi
+import time
 
 s = Server(audio='pa', nchnls=2).boot()
 s.start()
-mydir = 'C:/Users/rediet/Documents/Vocie-samples/'
-myfile = 'amy.wav'
-file = os.path.join(mydir, myfile)
-fs, x = wavfile.read(file)
+# mydir = 'C:/Users/rediet/Documents/Vocie-samples/'
+# myfile = 'amy.wav'
+# file = os.path.join(mydir, myfile)
+# fs, x = wavfile.read(file)
+#
+# xOne = voi.get_one_channel_array(x)
+# vSig = voi.get_signal_voiced_unvoiced_starting_info(x,fs)
+# lengthVoiced = voi.get_signal_voiced_length_info(xOne,vSig)
+# lengthUnvoiced = voi.get_signal_unvoiced_length_info(xOne,vSig)
+#
+# #make a signal array with only voiced regions
+# xVoiced = voi.get_voiced_region_array(xOne,vSig,lengthVoiced)
+#
+# xVoiced500 = []
+# samps = secToSamps(0.5)
+# cnt = 0
+# for i in xVoiced:
+#     if cnt < samps:
+#         xVoiced500.append(i)
+#     cnt = cnt + 1
+# voi.write_to_new_file('amy500.wav',mydir,xVoiced500)
+# voi.plot_voiced_region(xVoiced500)
 
-vSig = voiced_unvoiced.get_signal_voiced_unvoiced_starting_info(x,fs)
+file= "C:/Users/rediet/Documents/Vocie-samples/amy500.wav"
+fileRec = "C:/Users/rediet/Documents/Vocie-samples/amySine.wav"
+filedur = sndinfo(file)[1]
+sf = SfPlayer(file, speed=1, loop=False)
 
-
-
-
+lf2 = Sine(freq=200, mul= 50,add=1)
+# lf2 = 185.27436
+# lf2 = 0
+s.recstart(filename=fileRec)
+b = FreqShift(sf, shift=lf2 , mul=2).out()
+time.sleep(filedur)
+s.recstop()
+# s.recordOptions(dur=filedur, filename=fileRec)
+s.gui()
 
 
 
