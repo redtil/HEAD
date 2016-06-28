@@ -10,6 +10,8 @@ import scipy
 import array
 import voiced_unvoiced as voi
 import time
+import pygame
+import pitch_shifter
 
 s = Server(audio='pa', nchnls=2).boot()
 s.start()
@@ -17,6 +19,7 @@ s.start()
 # myfile = 'amy.wav'
 # file = os.path.join(mydir, myfile)
 # fs, x = wavfile.read(file)
+#
 #
 # xOne = voi.get_one_channel_array(x)
 # vSig = voi.get_signal_voiced_unvoiced_starting_info(x,fs)
@@ -33,64 +36,18 @@ s.start()
 #     if cnt < samps:
 #         xVoiced500.append(i)
 #     cnt = cnt + 1
-# voi.write_to_new_file('amy500.wav',mydir,xVoiced500)
-# voi.plot_voiced_region(xVoiced500)
+# # voi.plot_voiced_region(xVoiced500)
+# xVoiced500Two = voi.make_two_channels(xVoiced500)
+# voi.write_to_new_file('amy500.wav',mydir,xVoiced500Two)
 
-file= "C:/Users/rediet/Documents/Vocie-samples/amy500.wav"
-fileRec = "C:/Users/rediet/Documents/Vocie-samples/amySine.wav"
-filedur = sndinfo(file)[1]
-sf = SfPlayer(file, speed=1, loop=False)
+# mydir = 'C:/Users/rediet/Documents/Vocie-samples/'
+# myfile = 'amy.wav'
+# file = os.path.join(mydir, myfile)
+# fs, x = wavfile.read(file)
+# f0 = voi.get_freq_array(x,fs)
+# xOne = voi.get_one_channel_array(x)
+# voi.write_to_new_file('amyPitchShifted.wav',mydir,pitch_shifter.pitchshift(xOne,2.0))
 
-lf2 = Sine(freq=200, mul= 50,add=1)
-# lf2 = 185.27436
-# lf2 = 0
-s.recstart(filename=fileRec)
-b = FreqShift(sf, shift=lf2 , mul=2).out()
-time.sleep(filedur)
-s.recstop()
-# s.recordOptions(dur=filedur, filename=fileRec)
-s.gui()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##########################################################################################
-# yfile = []
-# yin = []
-# print secToSamps(6)
-# b = numpy.arange(0,secToSamps(3),1)
-# print b
-# cnt = 0
-# for i in x:
-#     if cnt == secToSamps(2):
-#         break
-#     # if (i[0] > 30) or (i[0] < -30):
-#     for j in i:
-#         yin.append(j)
-#     yfile.append(yin)
-#     yin = []
-#     cnt = cnt + 1
-#
-# yfilenew = []
-# for i in yfile:
-#     yfilenew.append(i[1])
-#
-# scipy.io.wavfile.write('C:/Users/rediet/Documents/Vocie-samples/xenencounter.wav',fs,numpy.asarray(yfile))
-#
-# yfilenew = numpy.asarray(yfilenew).astype(numpy.float32)
-# # hopsize = 10 # 5ms for 16kHz data
-# f0 = pysptk.swipe(yfilenew.astype(numpy.float64), fs, 80,10,600,0.3,1)
-#
 # fnew = []
 # cnti = []
 # cnt = 0
@@ -100,16 +57,39 @@ s.gui()
 #         fnew.append(i)
 #     cnt = cnt + 1
 # pitch_mean = numpy.mean(fnew)
-# cent = []
-# for i in fnew:
-#     cent.append(dspUtil.hertzToCents(i, pitch_mean))
+# cnti4 = numpy.asarray(cnti)/4.0
+# newSinArr = (numpy.sin(cnti4))*dspUtil.centsToHertz(200, pitch_mean)
+# diffarr = []
+# for i in numpy.arange(0,len(cnti4),1):
+#     diffarr.append(newSinArr[i]-fnew[i])
 #
-# import matplotlib.pyplot as plt
-# plt.close()
-# plt.plot(cnti, cent,'-o', linewidth=2, label="F0 trajectory estimated by SWIPE'")
+#
+# # voi.write_to_new_file('jaggedSineWave1.wav',mydir,diffarr)
+# plt.plot(cnti,newSinArr,'-o', cnti, fnew,'-bo',cnti, diffarr,'-ro', linewidth=2, label="F0 trajectory estimated by SWIPE'")
 # plt.xlim(0, len(f0))
 # plt.legend()
 # plt.show()
+#
+#
+file= "C:/Users/rediet/Documents/Vocie-samples/kendra.wav"
+# filetwo = "C:/Users/rediet/Documents/Vocie-samples/kendraVibrato.wav"
+fileRec = "C:/Users/rediet/Documents/Vocie-samples/kendraVibrato.wav"
+filedur = sndinfo(file)[1]
+
+sf = SfPlayer(file, speed=1, loop=False)
+# sf2 = SfPlayer(filetwo,speed=1,loop=False)
+lf2 = Sine(freq=2.5, mul= 50,add=1)
+# # lf2 = 185.27436
+# # lf2 = 0
+s.recstart(filename=fileRec)
+b = FreqShift(sf, shift=lf2, mul=1).out()
+time.sleep(filedur)
+s.recstop()
+
+
+
+# scipy.io.wavfile.write('C:/Users/rediet/Documents/Vocie-samples/xenencounter_23sin.wav',fs,numpy.asarray(yfile))
+
 #############################################################################################
 
 ############################################################################################
@@ -127,7 +107,6 @@ s.gui()
 # plt.ylabel('amplitude')
 # plt.show()
 ############################################################################################
-
 
 # yfilenew = []
 # for i in yfile:

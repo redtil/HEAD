@@ -91,27 +91,55 @@ def get_unvoiced_region_array(sndarrayOne,vSig,lengthUnvoiced):
         cntOne = cntOne + 1
     return xUnvoiced
 
-def plot_voiced_region(xVoiced):
-    xVoiced = numpy.asarray(xVoiced).astype(numpy.float32)
-    # hopsize = 10 # 5ms for 16kHz data
-    f0 = pysptk.swipe(numpy.asarray(xVoiced).astype(numpy.float64), 44100, 80,10,600,0.3,1)
-    fnew = []
-    cnti = []
+def get_voiced_region_chunks(vSig,lengthVoiced):
+    voiced_regions = []
+    for i in range(0,len(vSig["voicedStart"])):
+        start = vSig["voicedStart"][i]
+        end = start + lengthVoiced[i] -1
+        voiced_region = []
+        voiced_region.append(start)
+        voiced_region.append(end)
+        voiced_regions.append(voiced_region)
+    return voiced_regions
+
+
+def get_unvoiced_region_chunks(vSig,lengthUnvoiced):
+    unvoiced_regions = []
+    for i in range(0,len(vSig["unvoicedStart"])):
+        start = vSig["unvoicedStart"][i]
+        end = start + lengthVoiced[i] -1
+        unvoiced_region = []
+        unvoiced_region.append(start)
+        unvoiced_region.append(end)
+        unvoiced_regions.append(unvoiced_region)
+    return unvoiced_regions
+
+def get_non_zero_freq_array(f0):
+    non_zero_freq_array_info={"cnt":[],"f":[]}
     cnt = 0
     for i in f0:
         if i != 0:
-            cnti.append(cnt)
-            fnew.append(i)
+            non_zero_freq_array_info["cnt"].append(cnt)
+            non_zero_freq_array_info["f"].append(i)
         cnt = cnt + 1
-    pitch_mean = numpy.mean(fnew)
-    cent = []
-    for i in fnew:
-        cent.append(dspUtil.hertzToCents(i, pitch_mean))
+    return non_zero_freq_array_info
 
+def hertzToCents(f0):
+    pitch_mean = numpy.mean(f0)
+    cent = []
+    for i in f0:
+        cent.append(dspUtil.hertzToCents(i, pitch_mean))
+    return cent
+
+def find_mean(f0):
+    return numpy.mean(f0)
+
+def plot(x,y,total_len,desc):
     import matplotlib.pyplot as plt
-    plt.close()
-    plt.plot(f0,'-o', linewidth=2, label="F0 trajectory estimated by SWIPE'")
-    plt.xlim(0, len(f0))
+    if isinstance(y[0],numpy.ndarray):
+        y = get_one_channel_array(y)
+    plt.plot(x,y,'o',markersize=10,label=desc)
+    plt.xlim(0, total_len)
     plt.legend()
     plt.show()
 
@@ -139,10 +167,7 @@ def get_one_channel_array(sndarray):
     return xOne
 
 def get_freq_array(sndarray,fs):
-    xOne = []
-    for i in sndarray:
-        xOne.append(i[1])
-    f0 = pysptk.swipe(numpy.asarray(xOne).astype(numpy.float64), fs, 80,10,600,0.3,1)
+    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, 80,10,600,0.3,1)
     return f0
 
 def merge_voiced_unvoiced_regions(xVoiced,xUnvoiced,vSig):
@@ -212,14 +237,15 @@ def merge_voiced_unvoiced_regions(xVoiced,xUnvoiced,vSig):
 def make_two_channels(sndarrayOne):
     sndarrayTwo = []
     for i in sndarrayOne:
-        bz=[i,i]
+        bz=[]
+        for j in range(0,2):
+            bz.append(i)
         sndarrayTwo.append(bz)
     return sndarrayTwo
 
-def write_to_new_file(filename,path,sndarray):
+def write_to_new_file(filename,sndarray):
     sndarray = numpy.asarray(sndarray)
-    file = path + filename
-    scipy.io.wavfile.write(file,44100,numpy.asarray(sndarray))
+    scipy.io.wavfile.write(filename,44100,sndarray)
 
 if __name__ == "__main__":
     mydir = 'C:/Users/rediet/Documents/Vocie-samples/'
@@ -242,6 +268,6 @@ if __name__ == "__main__":
     # plot_voiced_region(xMerged)
     # xTwo = make_two_channels(x)
     xMergedTwo = make_two_channels(xMerged)
-    path = 'C:/Users/rediet/Documents/Vocie-samples/'
-    write_to_new_file('amyMerged.wav',path,xMergedTwo)
+    filename = 'C:/Users/rediet/Documents/Vocie-samples/amyMerged.wav'
+    write_to_new_file(filename,xMergedTwo)
     # scipy.io.wavfile.write('C:/Users/rediet/Documents/Vocie-samples/amyMerged.wav',fs,numpy.asarray(xMergedTwo))

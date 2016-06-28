@@ -4,6 +4,7 @@ def speedx(sound_array,factor):
     indices = np.round(np.arange(0,len(sound_array),factor))
     indices = indices[indices < len(sound_array)].astype(int)
     return sound_array[indices.astype(int)]
+
 def stretch(sound_array,f,window_size,h):
     phase = np.zeros(window_size)
     hanning_window = np.hanning(window_size)
@@ -21,8 +22,11 @@ def stretch(sound_array,f,window_size,h):
 
         i2 = int(i/f)
         result[i2 : i2 + window_size] = (result[i2 : i2 + window_size] + hanning_window*a2_rephased).astype('float64')
-    result = ((2**(16-4))* result/result.max())
+    # print ((2**(12))* result/result.max())
+    result =  (2**14)* (result/result.max())
     return result.astype('int16')
+
+#n is in semitones
 def pitchshift(snd_array,n,window_size=2**13, h=2**11):
     factor = 2**(1.0 * n/12.0)
     stretched =stretch(snd_array, 1.0/factor, window_size, h)
