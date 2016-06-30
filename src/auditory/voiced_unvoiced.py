@@ -67,6 +67,7 @@ def length_unvoiced_region(lenSndArray,lengthUnvoiced,vSig):
                 lengthUnvoiced.append(numpy.abs(vSig["voicedStart"][cnt+1]-i))
         cnt  = cnt + 1
 
+#returns concatenated voiced regions array of floats
 def get_voiced_region_array(sndarrayOne,vSig,lengthVoiced):
     xVoiced = []
     cnt = 0
@@ -79,6 +80,7 @@ def get_voiced_region_array(sndarrayOne,vSig,lengthVoiced):
         cntOne = cntOne + 1
     return xVoiced
 
+#returns concatenated unvoiced regions array of floats
 def get_unvoiced_region_array(sndarrayOne,vSig,lengthUnvoiced):
     xUnvoiced = []
     cnt = 0
@@ -91,6 +93,7 @@ def get_unvoiced_region_array(sndarrayOne,vSig,lengthUnvoiced):
         cntOne = cntOne + 1
     return xUnvoiced
 
+#returns an array of lists of starting and ending points of voiced chunks
 def get_voiced_region_chunks(vSig,lengthVoiced):
     voiced_regions = []
     for i in range(0,len(vSig["voicedStart"])):
@@ -102,7 +105,7 @@ def get_voiced_region_chunks(vSig,lengthVoiced):
         voiced_regions.append(voiced_region)
     return voiced_regions
 
-
+#returns an array of lists of starting and ending points of unvoiced chunks
 def get_unvoiced_region_chunks(vSig,lengthUnvoiced):
     unvoiced_regions = []
     for i in range(0,len(vSig["unvoicedStart"])):
@@ -143,8 +146,8 @@ def plot(x,y,total_len,desc):
     plt.legend()
     plt.show()
 
-def get_signal_voiced_unvoiced_starting_info(x,fs):
-    f0 = get_freq_array(x,fs)
+def get_signal_voiced_unvoiced_starting_info(x,fs,chunk_size):
+    f0 = get_freq_array(x,fs,chunk_size)
     vSig = {"unvoicedStart":[],"voicedStart":[]}
     unvoiced_starting_pts(f0,vSig)
     voiced_starting_pts(f0,vSig)
@@ -166,8 +169,8 @@ def get_one_channel_array(sndarray):
         xOne.append(i[1])
     return xOne
 
-def get_freq_array(sndarray,fs):
-    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, 80,10,600,0.3,1)
+def get_freq_array(sndarray,fs, chunk_size):
+    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, chunk_size,10,600,0.3,1)
     return f0
 
 def merge_voiced_unvoiced_regions(xVoiced,xUnvoiced,vSig):
