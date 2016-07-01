@@ -76,7 +76,7 @@ def get_pitch_marks_freq_chunk(sndarray,freq,chunk_start,chunk_size, numPitchMar
     pitch_marks = []
     factor = 0.7
     fctr = 1 - factor
-    period = 1/freq
+    period = float(1)/float(freq)
 
     # print "period " + str(period)
 
@@ -110,8 +110,6 @@ def get_pitch_marks_freq_chunk(sndarray,freq,chunk_start,chunk_size, numPitchMar
     # print "window_end0 "  + str(window_end)
     window_pitch_obj = {"windows":[],"pitch_marks":[]}
     cnt = 0
-    import datetime
-    tstart = datetime.datetime.now()
     while window_start <= chunk_end:
         if window_end >= chunk_end:
             window_end = chunk_end
@@ -121,7 +119,7 @@ def get_pitch_marks_freq_chunk(sndarray,freq,chunk_start,chunk_size, numPitchMar
         window_pitch_obj["windows"].append([window_start,window_end])
         window_pitch_obj["pitch_marks"].append([tm])
         pitch_marks.append(tm)
-        ind = get_zero_derivative_indices_fast(sndarray[window_start:window_end+1])
+        ind = get_zero_derivative_indices(sndarray[window_start:window_end+1])
         # print ind
         vals = []
 
@@ -153,8 +151,6 @@ def get_pitch_marks_freq_chunk(sndarray,freq,chunk_start,chunk_size, numPitchMar
             tm = numpy.argmax(sndarray[window_start:window_end])
         tm = tm + window_start
         cnt = cnt + 1
-    tend = datetime.datetime.now()
-    print "Time taken by while loop 3 " + str(tend-tstart)
         # print "window_start2 "  + str(window_start)
         # print "window_end2 "  + str(window_end)
         # print "chunk_start2 " + str(chunk_start)
@@ -169,7 +165,6 @@ def get_pitch_marks_freq_chunk(sndarray,freq,chunk_start,chunk_size, numPitchMar
         window_start = chunk_start
     window_end = tm + shift
 
-    tstart = datetime.datetime.now()
     while window_end >= chunk_start:
         shift = numpy.int(factor*periodToSamps)
         window_start = tm - shift
@@ -186,7 +181,7 @@ def get_pitch_marks_freq_chunk(sndarray,freq,chunk_start,chunk_size, numPitchMar
         pitch_marks.append(tm)
         window_pitch_obj["pitch_marks"].append([tm])
         # print "window_end1 "  + str(window_end)
-        ind = get_zero_derivative_indices_fast(sndarray[window_start:window_end+1])
+        ind = get_zero_derivative_indices(sndarray[window_start:window_end+1])
         # print ind
         vals = []
         #
@@ -203,8 +198,6 @@ def get_pitch_marks_freq_chunk(sndarray,freq,chunk_start,chunk_size, numPitchMar
             window_pitch_obj["pitch_marks"][cnt].append(chunk_start + spot_chunk)
             pitch_marks.append(chunk_start + spot_chunk)
             pitchMarksInd = pitchMarksInd - 1
-    tend = datetime.datetime.now()
-    print "Time taken by while loop 4 " + str(tend-tstart)
     return pitch_marks,window_pitch_obj
 
 def get_pitch_marks_unvoiced_chunk():
@@ -221,21 +214,13 @@ def get_pitch_marks_region(sndarray, region, chunk_size, type):
     for i in range(0,steps):
         chunk_start = i * chunk_size + region[0]
         chunk_end = chunk_start + chunk_size - 1
-        import datetime
-        tstart = datetime.datetime.now()
         spot = chunk_start/chunk_size
         freq = f0[spot]
         # freq = get_freq_chunk(sndarray,chunk_start,chunk_size)
-        tend = datetime.datetime.now()
-        print "Time taken by calling freq function " + str(tend-tstart)
         print "freq chunk number " + str(i)
         if type == "voiced":
             freq_chunk_windows_pitch_marks_obj["freq_chunks"].append([chunk_start,chunk_end])
-            import datetime
-            tstart = datetime.datetime.now()
             pitch_marks_chunk,window_pitch_obj = get_pitch_marks_freq_chunk(sndarray,freq,chunk_start, chunk_size, numPitchMarksPerChunk)
-            tend = datetime.datetime.now()
-            print "Time taken by calling function 2 " + str(tend-tstart)
             freq_chunk_windows_pitch_marks_obj["windows"].append(window_pitch_obj["windows"])
             freq_chunk_windows_pitch_marks_obj["pitch_marks"].append(window_pitch_obj["pitch_marks"])
         else:
@@ -252,11 +237,9 @@ def get_pitch_marks_regions(sndarray,regions, chunk_size, type):
 
     for i in regions:
         voiced_region_freq_chunk_windows_pitch_marks_obj["voiced_region"].append(i)
-        import datetime
-        tstart = datetime.datetime.now()
+
         pitch_marks_region,freq_chunk_windows_pitch_marks_obj = get_pitch_marks_region(sndarray, i, chunk_size, type)
-        tend = datetime.datetime.now()
-        print "Time taken by calling function " + str(tend-tstart)
+
         voiced_region_freq_chunk_windows_pitch_marks_obj["freq_chunks"].append(freq_chunk_windows_pitch_marks_obj["freq_chunks"])
         voiced_region_freq_chunk_windows_pitch_marks_obj["windows"].append(freq_chunk_windows_pitch_marks_obj["windows"])
         voiced_region_freq_chunk_windows_pitch_marks_obj["pitch_marks"].append(freq_chunk_windows_pitch_marks_obj["pitch_marks"])
@@ -269,7 +252,7 @@ def get_pitch_marks(sndarray,chunk_size):
     return
 
 if __name__ == "__main__":
-    filename= "C:/Users/rediet/Documents/Vocie-samples/kendraVU500.wav"
+    filename= "C:/Users/rediet/Documents/Vocie-samples/kendra.wav"
     filenameTxt = "C:/Users/rediet/Documents/Vocie-samples/kendraVU500Pitch_marks.txt"
     filename500= "C:/Users/rediet/Documents/Vocie-samples/kendra500.wav"
     filenameFM = "C:/Users/rediet/Documents/Vocie-samples/kendraFM.wav"
@@ -279,7 +262,7 @@ if __name__ == "__main__":
     fs, x = wavfile.read(filename)
     y = numpy.arange(0,len(x),1)
     x = voi.get_one_channel_array(x)
-    chunk_size = 80
+    chunk_size = 160
 
     # voi.plot(y,x,len(x),"signal amplitude")
 
@@ -287,28 +270,27 @@ if __name__ == "__main__":
     lengthVoiced = voi.get_signal_voiced_length_info(x,vSig)
     voiced_regions = voi.get_voiced_region_chunks(vSig,lengthVoiced)
 
-    import datetime
-    tstart = datetime.datetime.now()
+
     pitch_marks,voiced_region_freq_chunk_windows_pitch_marks_obj = get_pitch_marks_regions(x,voiced_regions,chunk_size, "voiced")
     print voiced_region_freq_chunk_windows_pitch_marks_obj
-    tend = datetime.datetime.now()
-    print "Time taken by slow algo " + str(tend-tstart)
+
 
     numpy.savetxt(filenameTxt,pitch_marks)
 
     pitch_marks_y = []
     for i in pitch_marks:
         pitch_marks_y.append(x[i])
+
+    pitch_marks_new = []
+    for j in pitch_marks:
+        pitch_marks_new.append(j-25600)
+
     import matplotlib.pyplot as plt
-    plt.plot(pitch_marks,pitch_marks_y,'x',markersize=10,color='red', label=" pitch markers")
-    plt.plot(y,x,'-',color='black')
-    plt.xlim(0, len(x))
+    plt.plot(pitch_marks_new,pitch_marks_y,'o',markersize=10,color='red', label=" pitch markers")
+    plt.plot(y[0:320],x[25600:25920],'-',color='black')
+    plt.xlim(0, len(x[0:320]))
     plt.legend()
     plt.show()
 
-    # f0 = voi.get_freq_array(x, 44100)
-    # x = numpy.arange(0,len(f0),1)
-    # voi.plot(x,f0, len(f0), "frequency spectrum")
-    # freq_regions = get_freq_regions_from_voiced_region([0,999],20)
-    # print freq_regions
+
 

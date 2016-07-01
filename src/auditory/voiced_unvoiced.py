@@ -15,7 +15,7 @@ def unvoiced_starting_pts(f0,vSig):
     cnt = 0
     for i in f0:
         if i == 0 and start == False:
-            pt = cnt * 80
+            pt = cnt * 160
             vSig["unvoicedStart"].append(pt)
             start = True
         if i != 0:
@@ -28,7 +28,7 @@ def voiced_starting_pts(f0,vSig):
     cnt = 0
     for i in f0:
         if i != 0 and start == False:
-            pt = cnt * 80
+            pt = cnt * 160
             vSig["voicedStart"].append(pt)
             start = True
         if i == 0:
@@ -170,7 +170,7 @@ def get_one_channel_array(sndarray):
     return xOne
 
 def get_freq_array(sndarray,fs, chunk_size):
-    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, chunk_size,10,600,0.3,1)
+    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, chunk_size,10,600,0.1,1)
     return f0
 
 def merge_voiced_unvoiced_regions(xVoiced,xUnvoiced,vSig):
