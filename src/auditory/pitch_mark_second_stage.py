@@ -36,12 +36,14 @@ def calculate_transition_probability(beta,fs,dist):
 
 def get_transition_probabilities(sndarray,pitch_marks_freq_array,wind,fs, candOne,candTwo, beta):
     trans_prob = []
-    dist = pitch_marks_freq_array[wind+1][candOne] - pitch_marks_freq_array[wind][candTwo]
+    dist = numpy.abs(pitch_marks_freq_array[wind+1][candOne] - pitch_marks_freq_array[wind][candTwo])
     trans_prob_wind_cand = calculate_transition_probability(beta,fs,dist)
     for i in pitch_marks_freq_array[wind+1]:
         dist = i - pitch_marks_freq_array[wind][candTwo]
         trans_prob.append(calculate_transition_probability(beta,fs,dist))
     summ = numpy.sum(trans_prob)
+    if summ == 0:
+        return float(trans_prob_wind_cand)
     norm = float(trans_prob_wind_cand)/float(summ)
     return norm
 
@@ -50,11 +52,9 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
     opt = []
     cnt = 0
     pitchMarksCnt = len(pitch_marks_freq_array[0])
-    maxKopt = []
 
     two_len = len(helper_array_two)
     print "identifier " + str(identifier)
-    print pitch_marks_freq_array
     helper_array_three = []
     for i in pitch_marks_freq_array:
         helper_array_three.append(len(i))
@@ -64,9 +64,8 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
         if identifier == 0:
             print " in 0 candState is " + str(candState)
             opt.append(candState)
-            helper_array[cnt ] = candState
+            helper_array[cnt] = candState
             helper_array_two[cnt] = int(0)
-            maxKopt.append(0)
         else:
             cntTwo = 0
             beta = 1
@@ -74,7 +73,8 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
             for i in pitch_marks_freq_array[identifier-1]:
                 cntT2 = numpy.sum(helper_array_three[0:identifier-1])
                 print "helper_array " + str(helper_array)
-                print "cnt+identifier*pitchMarksCnt " + str(cntTwo + cntT2)
+                print "helper_array_two " + str(helper_array_two)
+                print "helper_array_identifier " + str(cntTwo + cntT2)
                 if numpy.isinf(helper_array[cntTwo + cntT2]) == False:
                     print "I am going to call a function 0"
                     prev_opt = helper_array[cntTwo + cntT2]
@@ -88,16 +88,13 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
             maxK = numpy.argmax(optTwo)
             # retVal.append(maxK)
             summ = optTwo[maxK] + candState
-            print "candState " + str(candState)
             print "optTwo " + str(optTwo)
             print "optTwo[maxK] " + str(optTwo[maxK])
-            print "cnt " + str(cnt)
             print "summ " + str(summ)
             cntT = numpy.sum(helper_array_three[0:identifier])
             helper_array[cnt + cntT] = summ
             helper_array_two[cnt + cntT] = int(maxK)
             opt.append(summ)
-            maxKopt.append(maxK)
         cnt = cnt + 1
     maxOpt = numpy.argmax(opt)
 
@@ -107,20 +104,19 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
 
         cnt = len(pitch_marks_freq_array)
         cntT = 0
-        print "maxKopt " + str(maxKopt)
+        print "last opt " + str(opt)
         print "maxOpt " + str(maxOpt)
-        print "helper array 2 " + str(helper_array_two)
-        maxOpt = maxKopt[maxOpt]
-        for i in range(1,cnt-1):
-            print helper_array_three[three_len-1-i:three_len]
+        print "helper arrayTwo " + str(helper_array_two)
+        print "helper arrayThree " + str(helper_array_three)
+        for i in range(0,cnt-1):
             cntT = numpy.sum(helper_array_three[three_len-1-i:three_len])
-            retVal.append(maxOpt)
             print "cntT " + str(cntT)
-            print "two_len-cntT + maxOpt  " + str(two_len-1-cntT + maxOpt)
-            maxOpt = int(helper_array_two[two_len-1-cntT + maxOpt])
-            print "maxOpt 2 " + str(maxOpt)
-        print "retVal 1 " + str(retVal)
-        retVal.append(maxOpt)
+            print "two_lenCntT " + str(two_len-cntT + maxOpt)
+            maxOpt = int(helper_array_two[two_len-cntT + maxOpt])
+            retVal.append(maxOpt)
+            print "maxOptTwo " + str(maxOpt)
+        print "retValOne " + str(retVal)
+        # retVal.append(maxOpt)
     x = list(reversed(retVal))
     return x
 
@@ -158,6 +154,7 @@ def optimal_accumulated_log_probability(sndarray, all_snd_info):
         print "hmax " + str(hmax)
         print "hmin " + str(hmin)
         for pitch_marks_freq_chunk in pitch_marks_voiced_region:
+            print "pitch_marks_freq_chunk " + str(pitch_marks_freq_chunk)
             x = optimal_accumulated_log_probability_recur(sndarray,pitch_marks_freq_chunk,hmax,hmin,44100)
             print "x" + str(x)
             best_pitch_marks = []
@@ -173,7 +170,7 @@ def optimal_accumulated_log_probability(sndarray, all_snd_info):
     return best_voiced_region_freq_chunk_windows_pitch_marks_obj
 
 if __name__ == "__main__":
-    filename= "C:/Users/rediet/Documents/Vocie-samples/joey.wav"
+    filename= "C:/Users/rediet/Documents/Vocie-samples/eric.wav"
     filenameTxt = "C:/Users/rediet/Documents/Vocie-samples/kendraVU500Pitch_marks.txt"
     filename500= "C:/Users/rediet/Documents/Vocie-samples/kendra500.wav"
     filenameFM = "C:/Users/rediet/Documents/Vocie-samples/kendraFM.wav"
@@ -183,7 +180,7 @@ if __name__ == "__main__":
     fs, x = wavfile.read(filename)
     y = numpy.arange(0,len(x),1)
     x = voi.get_one_channel_array(x)
-    chunk_size = 160
+    chunk_size = 1024
 
     # voi.plot(y,x,len(x),"signal amplitude")
 
@@ -204,13 +201,16 @@ if __name__ == "__main__":
     for i in best_pitch_marks:
         best_pitch_marks_y.append(x[i])
 
+    start = 230000
+    end = 241000
+    diff = end - start
     best_pitch_marks_new = []
     for j in best_pitch_marks:
-        best_pitch_marks_new.append(j-20000)
+        best_pitch_marks_new.append(j-start)
 
     import matplotlib.pyplot as plt
     plt.plot(best_pitch_marks_new,best_pitch_marks_y,'o',markersize=10,color='red', label=" best pitch markers")
-    plt.plot(y[0:80000],x[20000:100000],'-',color='black')
-    plt.xlim(0, len(x[0:80000]))
+    plt.plot(y[0:diff],x[start:end],'-',color='black')
+    plt.xlim(0, len(x[0:diff]))
     plt.legend()
     plt.show()

@@ -9,26 +9,26 @@ from libs import dspUtil
 import scipy
 import array
 
-def unvoiced_starting_pts(f0,vSig):
+def unvoiced_starting_pts(f0,vSig,chunk_size):
     #register unvoiced signal starting points
     start = False
     cnt = 0
     for i in f0:
         if i == 0 and start == False:
-            pt = cnt * 160
+            pt = cnt * chunk_size
             vSig["unvoicedStart"].append(pt)
             start = True
         if i != 0:
             start = False
         cnt = cnt + 1
 
-def voiced_starting_pts(f0,vSig):
+def voiced_starting_pts(f0,vSig,chunk_size):
     #register voiced signal starting points
     start = False
     cnt = 0
     for i in f0:
         if i != 0 and start == False:
-            pt = cnt * 160
+            pt = cnt * chunk_size
             vSig["voicedStart"].append(pt)
             start = True
         if i == 0:
@@ -149,8 +149,8 @@ def plot(x,y,total_len,desc):
 def get_signal_voiced_unvoiced_starting_info(x,fs,chunk_size):
     f0 = get_freq_array(x,fs,chunk_size)
     vSig = {"unvoicedStart":[],"voicedStart":[]}
-    unvoiced_starting_pts(f0,vSig)
-    voiced_starting_pts(f0,vSig)
+    unvoiced_starting_pts(f0,vSig,chunk_size)
+    voiced_starting_pts(f0,vSig,chunk_size)
     return vSig
 
 def get_signal_voiced_length_info(sndarrayOne,vSig):
@@ -170,7 +170,7 @@ def get_one_channel_array(sndarray):
     return xOne
 
 def get_freq_array(sndarray,fs, chunk_size):
-    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, chunk_size,10,600,0.1,1)
+    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, chunk_size,60,300,0.09,1)
     return f0
 
 def merge_voiced_unvoiced_regions(xVoiced,xUnvoiced,vSig):
