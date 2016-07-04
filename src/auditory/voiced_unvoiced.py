@@ -96,6 +96,7 @@ def get_unvoiced_region_array(sndarrayOne,vSig,lengthUnvoiced):
 #returns an array of lists of starting and ending points of voiced chunks
 def get_voiced_region_chunks(vSig,lengthVoiced):
     voiced_regions = []
+    print vSig["voicedStart"]
     for i in range(0,len(vSig["voicedStart"])):
         start = vSig["voicedStart"][i]
         end = start + lengthVoiced[i] -1
@@ -108,6 +109,7 @@ def get_voiced_region_chunks(vSig,lengthVoiced):
 #returns an array of lists of starting and ending points of unvoiced chunks
 def get_unvoiced_region_chunks(vSig,lengthUnvoiced):
     unvoiced_regions = []
+    print vSig["unvoicedStart"]
     for i in range(0,len(vSig["unvoicedStart"])):
         start = vSig["unvoicedStart"][i]
         end = start + lengthVoiced[i] -1
@@ -170,7 +172,7 @@ def get_one_channel_array(sndarray):
     return xOne
 
 def get_freq_array(sndarray,fs, chunk_size):
-    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, chunk_size,60,300,0.09,1)
+    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, chunk_size,100,300,0.01,1)
     return f0
 
 def merge_voiced_unvoiced_regions(xVoiced,xUnvoiced,vSig):
@@ -252,25 +254,63 @@ def write_to_new_file(filename,sndarray):
 
 if __name__ == "__main__":
     mydir = 'C:/Users/rediet/Documents/Vocie-samples/'
-    myfile = 'amy.wav'
+    myfile = 'eric.wav'
     file = os.path.join(mydir, myfile)
+    filenameVoiced = 'C:/Users/rediet/Documents/Vocie-samples/ericVoiced.wav'
     fs, x = wavfile.read(file)
+    chunk_size = 1024
     xOne = get_one_channel_array(x)
 
     #vSig is a dictonary of voiced and unvoiced regions starting points
-    vSig = get_signal_voiced_unvoiced_starting_info(x,fs)
+    vSig = get_signal_voiced_unvoiced_starting_info(xOne,fs,chunk_size)
     lengthVoiced = get_signal_voiced_length_info(xOne,vSig)
-    lengthUnvoiced = get_signal_unvoiced_length_info(xOne,vSig)
+    # lengthUnvoiced = get_signal_unvoiced_length_info(xOne,vSig)
+
+    voiced_regions = get_voiced_region_chunks(vSig,lengthVoiced)
+    # unvoiced_regions = get_unvoiced_region_chunks(vSig,lengthUnvoiced)
+    print voiced_regions
+    # print unvoiced_regions
+
+
+
 
     #make a signal array with only voiced regions
     xVoiced = get_voiced_region_array(xOne,vSig,lengthVoiced)
-    xUnvoiced = get_unvoiced_region_array(xOne,vSig,lengthUnvoiced)
-    xMerged = merge_voiced_unvoiced_regions(xVoiced,xUnvoiced,vSig)
-
-    # plot_voiced_region(xVoiced)
-    # plot_voiced_region(xMerged)
-    # xTwo = make_two_channels(x)
-    xMergedTwo = make_two_channels(xMerged)
-    filename = 'C:/Users/rediet/Documents/Vocie-samples/amyMerged.wav'
-    write_to_new_file(filename,xMergedTwo)
-    # scipy.io.wavfile.write('C:/Users/rediet/Documents/Vocie-samples/amyMerged.wav',fs,numpy.asarray(xMergedTwo))
+    # xUnvoiced = get_unvoiced_region_array(xOne,vSig,lengthUnvoiced)
+    print voiced_regions
+    voiced_region_hi = []
+    vr_start = 17408
+    vr_stop = 17408 + 17592
+    for i in range(vr_start,vr_stop):
+        voiced_region_hi.append(x[i])
+    write_to_new_file(filenameVoiced,voiced_region_hi)
+    start = vr_start
+    end = vr_stop
+    diff = end - start
+    print diff
+    # y = numpy.arange(0,len(x),1)
+    #
+    # voiced_region_pts = []
+    # cnt = 0
+    # for i in lengthVoiced:
+    #     for j in range(0,i):
+    #         if vSig["voicedStart"][cnt] + j >= start and vSig["voicedStart"][cnt] + j <= end:
+    #             # print " i am in " + str(vSig["voicedStart"][cnt] + j)
+    #             voiced_region_pts.append(vSig["voicedStart"][cnt] + j)
+    #     cnt = cnt + 1
+    #
+    # new_x = []
+    # for i in voiced_region_pts:
+    #     new_x.append(xOne[i])
+    #
+    # voiced_region_pts_new = []
+    # for i in voiced_region_pts:
+    #     voiced_region_pts_new.append(i-start)
+    #
+    #
+    import matplotlib.pyplot as plt
+    plt.plot(xOne[start:end],'-',color='black')
+    # plt.plot(voiced_region_pts_new,new_x,'o',markersize=10,color='red', label="voiced region amplitude")
+    plt.xlim(0, len(x[start:end]))
+    # plt.legend()
+    plt.show()

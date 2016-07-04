@@ -54,7 +54,7 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
     pitchMarksCnt = len(pitch_marks_freq_array[0])
 
     two_len = len(helper_array_two)
-    print "identifier " + str(identifier)
+    # print "identifier " + str(identifier)
     helper_array_three = []
     for i in pitch_marks_freq_array:
         helper_array_three.append(len(i))
@@ -62,7 +62,7 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
     for i in pitch_marks_freq_array[identifier]:
         candState = get_state_probabilities(sndarray,pitch_marks_freq_array,identifier,cnt,hmax,hmin)
         if identifier == 0:
-            print " in 0 candState is " + str(candState)
+            # print " in 0 candState is " + str(candState)
             opt.append(candState)
             helper_array[cnt] = candState
             helper_array_two[cnt] = int(0)
@@ -72,14 +72,14 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
             optTwo = []
             for i in pitch_marks_freq_array[identifier-1]:
                 cntT2 = numpy.sum(helper_array_three[0:identifier-1])
-                print "helper_array " + str(helper_array)
-                print "helper_array_two " + str(helper_array_two)
-                print "helper_array_identifier " + str(cntTwo + cntT2)
+                # print "helper_array " + str(helper_array)
+                # print "helper_array_two " + str(helper_array_two)
+                # print "helper_array_identifier " + str(cntTwo + cntT2)
                 if numpy.isinf(helper_array[cntTwo + cntT2]) == False:
-                    print "I am going to call a function 0"
+                    # print "I am going to call a function 0"
                     prev_opt = helper_array[cntTwo + cntT2]
                 else:
-                    print "I am going to call a function 1"
+                    # print "I am going to call a function 1"
                     optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_array,identifier-1,helper_array,helper_array_two,hmax,hmin,fs)
                     prev_opt = helper_array[cntTwo + cntT2]
                 trans_prob = get_transition_probabilities(sndarray,pitch_marks_freq_array,identifier-1,fs,cnt,cntTwo,beta)
@@ -88,9 +88,9 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
             maxK = numpy.argmax(optTwo)
             # retVal.append(maxK)
             summ = optTwo[maxK] + candState
-            print "optTwo " + str(optTwo)
-            print "optTwo[maxK] " + str(optTwo[maxK])
-            print "summ " + str(summ)
+            # print "optTwo " + str(optTwo)
+            # print "optTwo[maxK] " + str(optTwo[maxK])
+            # print "summ " + str(summ)
             cntT = numpy.sum(helper_array_three[0:identifier])
             helper_array[cnt + cntT] = summ
             helper_array_two[cnt + cntT] = int(maxK)
@@ -104,18 +104,18 @@ def optimal_accumulated_log_probability_recur_helper(sndarray,pitch_marks_freq_a
 
         cnt = len(pitch_marks_freq_array)
         cntT = 0
-        print "last opt " + str(opt)
-        print "maxOpt " + str(maxOpt)
-        print "helper arrayTwo " + str(helper_array_two)
-        print "helper arrayThree " + str(helper_array_three)
+        # print "last opt " + str(opt)
+        # print "maxOpt " + str(maxOpt)
+        # print "helper arrayTwo " + str(helper_array_two)
+        # print "helper arrayThree " + str(helper_array_three)
         for i in range(0,cnt-1):
             cntT = numpy.sum(helper_array_three[three_len-1-i:three_len])
-            print "cntT " + str(cntT)
-            print "two_lenCntT " + str(two_len-cntT + maxOpt)
+            # print "cntT " + str(cntT)
+            # print "two_lenCntT " + str(two_len-cntT + maxOpt)
             maxOpt = int(helper_array_two[two_len-cntT + maxOpt])
             retVal.append(maxOpt)
-            print "maxOptTwo " + str(maxOpt)
-        print "retValOne " + str(retVal)
+            # print "maxOptTwo " + str(maxOpt)
+        # print "retValOne " + str(retVal)
         # retVal.append(maxOpt)
     x = list(reversed(retVal))
     return x
@@ -151,16 +151,16 @@ def optimal_accumulated_log_probability(sndarray, all_snd_info):
         hminIndex = numpy.min(sndarray[voiced_region_start:voiced_region_end])
         hmax = sndarray[voiced_region_start + hmaxIndex]
         hmin = sndarray[voiced_region_start + hminIndex]
-        print "hmax " + str(hmax)
-        print "hmin " + str(hmin)
+        # print "hmax " + str(hmax)
+        # print "hmin " + str(hmin)
         for pitch_marks_freq_chunk in pitch_marks_voiced_region:
             print "pitch_marks_freq_chunk " + str(pitch_marks_freq_chunk)
             x = optimal_accumulated_log_probability_recur(sndarray,pitch_marks_freq_chunk,hmax,hmin,44100)
-            print "x" + str(x)
+            # print "x" + str(x)
             best_pitch_marks = []
             for j in range(0,len(pitch_marks_freq_chunk)):
-                print " j !!! " + str(j)
-                print "pitch_marks!!!!"  + str(pitch_marks_freq_chunk[j][x[j]])
+                # print " j !!! " + str(j)
+                # print "pitch_marks!!!!"  + str(pitch_marks_freq_chunk[j][x[j]])
                 best_pitch_marks.append(pitch_marks_freq_chunk[j][x[j]])
             # print best_pitch_marks
             best_pitch_marks_freq_chunks.append(best_pitch_marks)
@@ -189,7 +189,10 @@ if __name__ == "__main__":
     voiced_regions = voi.get_voiced_region_chunks(vSig,lengthVoiced)
     pitch_marks,voiced_region_freq_chunk_windows_pitch_marks_obj = pmfs.get_pitch_marks_regions(x,voiced_regions,chunk_size, "voiced")
     best_voiced_region_freq_chunk_windows_pitch_marks_obj = optimal_accumulated_log_probability(x,voiced_region_freq_chunk_windows_pitch_marks_obj)
-    print best_voiced_region_freq_chunk_windows_pitch_marks_obj
+
+
+    # print best_voiced_region_freq_chunk_windows_pitch_marks_obj["best_pitch_marks"]
+    print best_voiced_region_freq_chunk_windows_pitch_marks_obj["freq_chunks"]
 
     best_pitch_marks = []
     for best_pitch_marks_voiced_region in best_voiced_region_freq_chunk_windows_pitch_marks_obj["best_pitch_marks"]:
@@ -201,8 +204,8 @@ if __name__ == "__main__":
     for i in best_pitch_marks:
         best_pitch_marks_y.append(x[i])
 
-    start = 230000
-    end = 241000
+    start = 0
+    end = 24100
     diff = end - start
     best_pitch_marks_new = []
     for j in best_pitch_marks:
