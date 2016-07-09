@@ -24,14 +24,14 @@ def integratorFM(carrierFreq, bandwidth, sndarray,timeArray):
     #     base = array.array('h', baseband.readframes(1))
         # Base signal is integrated (not mandatory, but improves
         # volume at demodulation side)
-        # integ_base += base[0]/32768.0
-        integ_base2 += sndarray[cnt]/2.0
+        integ_base += sndarray[cnt]/3.0
+        # integ_base2 += sndarray[cnt]/2.0
         # The FM trick: time (n) is multiplied only by carrier freq;
         # the frequency deviation is added afterwards.00
         # print 2 * math.pi * FM_CARRIER * (n /fs) + 2 * math.pi * FM_BAND * integ_base2 / fs
         nfs = numpy.float32(n)
-        signal_fm = math.cos(2 * math.pi * carrierFreq * nfs + 2 * math.pi * bandwidth * integ_base2)
-        signal_fm_array.append(signal_fm*1.0)
+        signal_fm = math.cos(2 * math.pi * carrierFreq * nfs + 2 * math.pi * bandwidth * integ_base)
+        signal_fm_array.append(signal_fm*3000.0)
         cnt = cnt + 1
         # fm.writeframes(struct.pack('h', signal_fm *32767.0))
     return signal_fm_array

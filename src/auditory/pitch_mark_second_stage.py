@@ -147,23 +147,32 @@ def optimal_accumulated_log_probability(sndarray, all_snd_info):
         best_pitch_marks_freq_chunks = []
         voiced_region_start = best_voiced_region_freq_chunk_windows_pitch_marks_obj["voiced_region"][cntVoicedRegions][0]
         voiced_region_end = best_voiced_region_freq_chunk_windows_pitch_marks_obj["voiced_region"][cntVoicedRegions][1]
-        hmaxIndex = numpy.max(sndarray[voiced_region_start:voiced_region_end])
-        hminIndex = numpy.min(sndarray[voiced_region_start:voiced_region_end])
+        # print voiced_region_start
+        # print voiced_region_end
+        # print len(sndarray)
+        hmaxIndex = numpy.argmax(sndarray[voiced_region_start:voiced_region_end])
+        hminIndex = numpy.argmin(sndarray[voiced_region_start:voiced_region_end])
+        # print hmaxIndex
+        # print hminIndex
         hmax = sndarray[voiced_region_start + hmaxIndex]
         hmin = sndarray[voiced_region_start + hminIndex]
         # print "hmax " + str(hmax)
         # print "hmin " + str(hmin)
         for pitch_marks_freq_chunk in pitch_marks_voiced_region:
-            print "pitch_marks_freq_chunk " + str(pitch_marks_freq_chunk)
-            x = optimal_accumulated_log_probability_recur(sndarray,pitch_marks_freq_chunk,hmax,hmin,44100)
-            # print "x" + str(x)
+            # print "pitch_marks_freq_chunk " + str(pitch_marks_freq_chunk)
             best_pitch_marks = []
-            for j in range(0,len(pitch_marks_freq_chunk)):
+            if len(pitch_marks_freq_chunk) == 0:
+                best_pitch_marks_freq_chunks.append(best_pitch_marks)
+            else:
+                x = optimal_accumulated_log_probability_recur(sndarray,pitch_marks_freq_chunk,hmax,hmin,44100)
+            # print "x" + str(x)
+
+                for j in range(0,len(pitch_marks_freq_chunk)):
                 # print " j !!! " + str(j)
-                # print "pitch_marks!!!!"  + str(pitch_marks_freq_chunk[j][x[j]])
-                best_pitch_marks.append(pitch_marks_freq_chunk[j][x[j]])
+                #     print "pitch_marks!!!!"  + str(pitch_marks_freq_chunk[j][x[j]])
+                    best_pitch_marks.append(pitch_marks_freq_chunk[j][x[j]])
             # print best_pitch_marks
-            best_pitch_marks_freq_chunks.append(best_pitch_marks)
+                best_pitch_marks_freq_chunks.append(best_pitch_marks)
         # print best_pitch_marks_freq_chunks
         best_voiced_region_freq_chunk_windows_pitch_marks_obj["best_pitch_marks"].append(best_pitch_marks_freq_chunks)
         cntVoicedRegions = cntVoicedRegions + 1

@@ -96,15 +96,40 @@ def get_unvoiced_region_array(sndarrayOne,vSig,lengthUnvoiced):
 #returns an array of lists of starting and ending points of voiced chunks
 def get_voiced_region_chunks(vSig,lengthVoiced):
     voiced_regions = []
-    print vSig["voicedStart"]
     for i in range(0,len(vSig["voicedStart"])):
         start = vSig["voicedStart"][i]
-        end = start + lengthVoiced[i] -1
+        end = start + lengthVoiced[i] - 1
         voiced_region = []
         voiced_region.append(start)
         voiced_region.append(end)
         voiced_regions.append(voiced_region)
     return voiced_regions
+
+def get_voiced_region_chunks_two(sndarray,chunk_size):
+    len_snd = len(sndarray)
+    voiced_regions = []
+    unvoiced_regions = []
+    freq_array = []
+    steps = int(numpy.ceil(len_snd/chunk_size))
+    print steps
+    for i in range(0,steps):
+        chunk_start = i * chunk_size
+        if chunk_start >= len_snd-1:
+            chunk_start = len_snd-1
+        chunk_end = chunk_start + chunk_size - 1
+        if chunk_end >= len_snd-1:
+            chunk_end = len_snd-1
+        if chunk_start == chunk_end:
+            break
+        print "I am here"
+        f0 = get_freq_array(numpy.asarray(sndarray[chunk_start:chunk_end+1]).tolist(),44100,chunk_size)
+        freq = f0[0]
+        if freq != 0:
+            voiced_regions.append([chunk_start,chunk_end])
+            freq_array.append(freq)
+        else:
+            unvoiced_regions.append([chunk_start,chunk_end])
+    return voiced_regions,unvoiced_regions,freq_array
 
 #returns an array of lists of starting and ending points of unvoiced chunks
 def get_unvoiced_region_chunks(vSig,lengthUnvoiced):
@@ -141,9 +166,13 @@ def find_mean(f0):
 
 def plot(x,y,total_len,desc):
     import matplotlib.pyplot as plt
+
     if isinstance(y[0],numpy.ndarray):
+        print "I am here 0"
         y = get_one_channel_array(y)
-    plt.plot(x,y,'o',markersize=10,label=desc)
+    print "I am here"
+    plt.plot(y,'-')
+    print "I am here 1"
     plt.xlim(0, total_len)
     plt.legend()
     plt.show()
@@ -172,7 +201,10 @@ def get_one_channel_array(sndarray):
     return xOne
 
 def get_freq_array(sndarray,fs, chunk_size):
-    f0 = pysptk.swipe(numpy.asarray(sndarray).astype(numpy.float64), fs, chunk_size,100,300,0.01,1)
+    new_sndarray = []
+    for i in sndarray:
+        new_sndarray.append(numpy.float64(i))
+    f0 = pysptk.swipe(numpy.asarray(new_sndarray), fs, chunk_size, 75,300,0.001,1)
     return f0
 
 def merge_voiced_unvoiced_regions(xVoiced,xUnvoiced,vSig):
@@ -254,7 +286,7 @@ def write_to_new_file(filename,sndarray):
 
 if __name__ == "__main__":
     mydir = 'C:/Users/rediet/Documents/Vocie-samples/'
-    myfile = 'eric.wav'
+    myfile = 'nicole.wav'
     file = os.path.join(mydir, myfile)
     filenameVoiced = 'C:/Users/rediet/Documents/Vocie-samples/ericVoiced.wav'
     fs, x = wavfile.read(file)
@@ -275,19 +307,19 @@ if __name__ == "__main__":
 
 
     #make a signal array with only voiced regions
-    xVoiced = get_voiced_region_array(xOne,vSig,lengthVoiced)
+    # xVoiced = get_voiced_region_array(xOne,vSig,lengthVoiced)
     # xUnvoiced = get_unvoiced_region_array(xOne,vSig,lengthUnvoiced)
-    print voiced_regions
-    voiced_region_hi = []
-    vr_start = 17408
-    vr_stop = 17408 + 17592
-    for i in range(vr_start,vr_stop):
-        voiced_region_hi.append(x[i])
-    write_to_new_file(filenameVoiced,voiced_region_hi)
-    start = vr_start
-    end = vr_stop
-    diff = end - start
-    print diff
+    # print voiced_regions
+    # voiced_region_hi = []
+    # vr_start = 392192
+    # vr_stop = 393215
+    # for i in range(vr_start,vr_stop):
+    #     voiced_region_hi.append(x[i])
+    # write_to_new_file(filenameVoiced,voiced_region_hi)
+    # start = vr_start
+    # end = vr_stop
+    # diff = end - start
+    # print diff
     # y = numpy.arange(0,len(x),1)
     #
     # voiced_region_pts = []
@@ -308,9 +340,9 @@ if __name__ == "__main__":
     #     voiced_region_pts_new.append(i-start)
     #
     #
-    import matplotlib.pyplot as plt
-    plt.plot(xOne[start:end],'-',color='black')
-    # plt.plot(voiced_region_pts_new,new_x,'o',markersize=10,color='red', label="voiced region amplitude")
-    plt.xlim(0, len(x[start:end]))
-    # plt.legend()
-    plt.show()
+    # import matplotlib.pyplot as plt
+    # plt.plot(xOne[start:end],'-',color='black')
+    # # plt.plot(voiced_region_pts_new,new_x,'o',markersize=10,color='red', label="voiced region amplitude")
+    # plt.xlim(0, len(x[start:end]))
+    # # plt.legend()
+    # plt.show()

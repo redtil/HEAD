@@ -5,12 +5,18 @@ from pyo import *
 s = Server(audio='pa', nchnls=2).boot()
 s.start()
 file= "C:/Users/rediet/Documents/Vocie-samples/amy.wav"
+filenameRecord = 'C:/Users/rediet/Documents/Vocie-samples/eric500Shifted.wav'
 sf = SfPlayer(file, speed=1, loop=False)
 # lf1 = Sine(freq=.04, mul=10)
 # lf1= 508.355
 # lf2 = Sine(freq=200, mul= 5,add=1)
 lf2 = 185.27436
-b = FreqShift(sf, shift=lf2 , mul=2).out()
+# b = FreqShift(sf, shift=lf2 , mul=2).out()
+s.recstart(filenameRecord)
+b = FreqShift(sf, shift=100 , mul=2).out()
+time.sleep(10)
+s.recstop()
+s.gui()
 # fr = Sine(.2, 0, 8000, 8000)
 # boo = Sine([4, 4], 1, -12)
 # out = EQ(b, freq=fr, q=1, boost=boo, type=2).out() #filtering
@@ -27,4 +33,4 @@ b = FreqShift(sf, shift=lf2 , mul=2).out()
 #
 # pit = Randi(min=0.99, max=1.01, freq=100)
 
-s.gui()
+# s.gui()
